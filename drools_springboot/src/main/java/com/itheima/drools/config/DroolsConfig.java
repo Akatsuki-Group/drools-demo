@@ -46,7 +46,6 @@ public class DroolsConfig {
         KieServices ks = KieServices.Factory.get();
         KieRepository kr = ks.getRepository();
         KieFileSystem kfs = ks.newKieFileSystem();
-
         kfs.write("src/main/resources/rules/" + drlStr.hashCode() + ".drl", drlStr);
         // 将KieFileSystem加入到KieBuilder
         KieBuilder kb = ks.newKieBuilder(kfs);
