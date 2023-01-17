@@ -5,6 +5,7 @@ import org.kie.api.KieServices;
 import org.kie.api.builder.KieBuilder;
 import org.kie.api.builder.KieFileSystem;
 import org.kie.api.builder.KieRepository;
+import org.kie.api.builder.Message;
 import org.kie.api.runtime.KieContainer;
 import org.kie.internal.io.ResourceFactory;
 import org.kie.spring.KModuleBeanFactoryPostProcessor;
@@ -39,6 +40,25 @@ public class DroolsConfig {
         }
         return kieFileSystem;
     }
+
+    //动态加载规则文件
+    public KieContainer loadForRule(String drlStr) {
+        KieServices ks = KieServices.Factory.get();
+        KieRepository kr = ks.getRepository();
+        KieFileSystem kfs = ks.newKieFileSystem();
+
+        kfs.write("src/main/resources/rules/" + drlStr.hashCode() + ".drl", drlStr);
+        // 将KieFileSystem加入到KieBuilder
+        KieBuilder kb = ks.newKieBuilder(kfs);
+        // 编译此时的builder中所有的规则
+        kb.buildAll();
+        if (kb.getResults().hasMessages(Message.Level.ERROR)) {
+            throw new RuntimeException("Build Errors:\n" + kb.getResults().toString());
+        }
+
+        return ks.newKieContainer(kr.getDefaultReleaseId());
+    }
+
     @Bean
     @ConditionalOnMissingBean
     public KieContainer kieContainer() throws IOException {
